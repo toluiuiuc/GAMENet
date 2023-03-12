@@ -1,3 +1,7 @@
+import sys
+sys.path.append('..')
+
+from util import multi_label_metric
 import dill
 import numpy as np
 from sklearn.linear_model import LogisticRegression
@@ -5,18 +9,15 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.multiclass import OneVsRestClassifier
 from collections import defaultdict
 from sklearn.model_selection import GridSearchCV
-from sklearn.metrics import jaccard_similarity_score
+# from sklearn.metrics import jaccard_similarity_score
 import os
-
-import sys
-sys.path.append('..')
-from util import multi_label_metric
 
 np.random.seed(1203)
 model_name = 'LR'
 
 if not os.path.exists(os.path.join("saved", model_name)):
     os.makedirs(os.path.join("saved", model_name))
+
 
 def create_dataset(data, diag_voc, pro_voc, med_voc):
     i1_len = len(diag_voc.idx2word)
@@ -71,13 +72,13 @@ def main():
 
         model = LogisticRegression()
         classifier = OneVsRestClassifier(model)
-        lr_gs = GridSearchCV(classifier, params, verbose=1).fit(train_X, train_y)
+        lr_gs = GridSearchCV(classifier, params,
+                             verbose=1).fit(train_X, train_y)
 
         print("Best Params", lr_gs.best_params_)
         print("Best Score", lr_gs.best_score_)
 
         return
-
 
     # sample_X, sample_y = create_dataset(sample_data, diag_voc, pro_voc, med_voc)
 
@@ -88,7 +89,8 @@ def main():
     y_pred = classifier.predict(test_X)
     y_prob = classifier.predict_proba(test_X)
 
-    ja, prauc, avg_p, avg_r, avg_f1 = multi_label_metric(test_y, y_pred, y_prob)
+    ja, prauc, avg_p, avg_r, avg_f1 = multi_label_metric(
+        test_y, y_pred, y_prob)
 
     # ddi rate
     ddi_A = dill.load(open('../../data/ddi_A_final.pkl', 'rb'))
@@ -97,7 +99,7 @@ def main():
     med_cnt = 0
     visit_cnt = 0
     for adm in y_pred:
-        med_code_set = np.where(adm==1)[0]
+        med_code_set = np.where(adm == 1)[0]
         visit_cnt += 1
         med_cnt += len(med_code_set)
         for i, med_i in enumerate(med_code_set):
@@ -121,7 +123,8 @@ def main():
         history['avg_f1'].append(avg_f1)
         history['prauc'].append(prauc)
 
-    dill.dump(history, open(os.path.join('saved', model_name, 'history.pkl'), 'wb'))
+    dill.dump(history, open(os.path.join(
+        'saved', model_name, 'history.pkl'), 'wb'))
 
     print('avg med', med_cnt / visit_cnt)
 
