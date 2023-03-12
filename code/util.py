@@ -1,4 +1,5 @@
-from sklearn.metrics import jaccard_similarity_score, roc_auc_score, precision_score, f1_score, average_precision_score
+# from sklearn.metrics import jaccard_similarity_score, roc_auc_score, precision_score, f1_score, average_precision_score
+from sklearn.metrics import roc_auc_score, precision_score, f1_score, average_precision_score
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -8,24 +9,31 @@ import dill
 from collections import Counter
 warnings.filterwarnings('ignore')
 
+
 def get_n_params(model):
-    pp=0
+    pp = 0
     for p in list(model.parameters()):
-        nn=1
+        nn = 1
         for s in list(p.size()):
             nn = nn*s
         pp += nn
     return pp
 
 # use the same metric from DMNC
+
+
 def llprint(message):
     sys.stdout.write(message)
     sys.stdout.flush()
 
+
 def transform_split(X, Y):
-    x_train, x_eval, y_train, y_eval = train_test_split(X, Y, train_size=2/3, random_state=1203)
-    x_eval, x_test, y_eval, y_test = train_test_split(x_eval, y_eval, test_size=0.5, random_state=1203)
+    x_train, x_eval, y_train, y_eval = train_test_split(
+        X, Y, train_size=2/3, random_state=1203)
+    x_eval, x_test, y_eval, y_test = train_test_split(
+        x_eval, y_eval, test_size=0.5, random_state=1203)
     return x_train, x_eval, x_test, y_train, y_eval, y_test
+
 
 def sequence_output_process(output_logits, filter_token):
     pind = np.argsort(output_logits, axis=-1)[:, ::-1]
@@ -45,7 +53,8 @@ def sequence_output_process(output_logits, filter_token):
     y_pred_prob_tmp = []
     for idx, item in enumerate(out_list):
         y_pred_prob_tmp.append(output_logits[idx, item])
-    sorted_predict = [x for _, x in sorted(zip(y_pred_prob_tmp, out_list), reverse=True)]
+    sorted_predict = [x for _, x in sorted(
+        zip(y_pred_prob_tmp, out_list), reverse=True)]
     return out_list, sorted_predict
 
 
@@ -53,13 +62,12 @@ def sequence_metric(y_gt, y_pred, y_prob, y_label):
     def average_prc(y_gt, y_label):
         score = []
         for b in range(y_gt.shape[0]):
-            target = np.where(y_gt[b]==1)[0]
+            target = np.where(y_gt[b] == 1)[0]
             out_list = y_label[b]
             inter = set(out_list) & set(target)
             prc_score = 0 if len(out_list) == 0 else len(inter) / len(out_list)
             score.append(prc_score)
         return score
-
 
     def average_recall(y_gt, y_label):
         score = []
@@ -71,16 +79,15 @@ def sequence_metric(y_gt, y_pred, y_prob, y_label):
             score.append(recall_score)
         return score
 
-
     def average_f1(average_prc, average_recall):
         score = []
         for idx in range(len(average_prc)):
             if (average_prc[idx] + average_recall[idx]) == 0:
                 score.append(0)
             else:
-                score.append(2*average_prc[idx]*average_recall[idx] / (average_prc[idx] + average_recall[idx]))
+                score.append(
+                    2*average_prc[idx]*average_recall[idx] / (average_prc[idx] + average_recall[idx]))
         return score
-
 
     def jaccard(y_gt, y_label):
         score = []
@@ -102,13 +109,15 @@ def sequence_metric(y_gt, y_pred, y_prob, y_label):
     def roc_auc(y_gt, y_pred_prob):
         all_micro = []
         for b in range(len(y_gt)):
-            all_micro.append(roc_auc_score(y_gt[b], y_pred_prob[b], average='macro'))
+            all_micro.append(roc_auc_score(
+                y_gt[b], y_pred_prob[b], average='macro'))
         return np.mean(all_micro)
 
     def precision_auc(y_gt, y_prob):
         all_micro = []
         for b in range(len(y_gt)):
-            all_micro.append(average_precision_score(y_gt[b], y_prob[b], average='macro'))
+            all_micro.append(average_precision_score(
+                y_gt[b], y_prob[b], average='macro'))
         return np.mean(all_micro)
 
     def precision_at_k(y_gt, y_prob_label, k):
@@ -176,7 +185,8 @@ def multi_label_metric(y_gt, y_pred, y_prob):
             if average_prc[idx] + average_recall[idx] == 0:
                 score.append(0)
             else:
-                score.append(2*average_prc[idx]*average_recall[idx] / (average_prc[idx] + average_recall[idx]))
+                score.append(
+                    2*average_prc[idx]*average_recall[idx] / (average_prc[idx] + average_recall[idx]))
         return score
 
     def f1(y_gt, y_pred):
@@ -188,13 +198,15 @@ def multi_label_metric(y_gt, y_pred, y_prob):
     def roc_auc(y_gt, y_prob):
         all_micro = []
         for b in range(len(y_gt)):
-            all_micro.append(roc_auc_score(y_gt[b], y_prob[b], average='macro'))
+            all_micro.append(roc_auc_score(
+                y_gt[b], y_prob[b], average='macro'))
         return np.mean(all_micro)
 
     def precision_auc(y_gt, y_prob):
         all_micro = []
         for b in range(len(y_gt)):
-            all_micro.append(average_precision_score(y_gt[b], y_prob[b], average='macro'))
+            all_micro.append(average_precision_score(
+                y_gt[b], y_prob[b], average='macro'))
         return np.mean(all_micro)
 
     def precision_at_k(y_gt, y_prob, k=3):
@@ -220,6 +232,7 @@ def multi_label_metric(y_gt, y_pred, y_prob):
     avg_f1 = average_f1(avg_prc, avg_recall)
 
     return ja, prauc, np.mean(avg_prc), np.mean(avg_recall), np.mean(avg_f1)
+
 
 def ddi_rate_score(record, path='../data/ddi_A_final.pkl'):
     # ddi rate
