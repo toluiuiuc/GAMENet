@@ -41,7 +41,7 @@ class GCN(nn.Module):
         return mx
 
 class GAMENet(nn.Module):
-    def __init__(self, vocab_size, ehr_adj, ddi_adj, emb_dim=64, device=torch.device('cpu:0'), ddi_in_memory=True):
+    def __init__(self, vocab_size, ehr_adj, ddi_adj, emb_dim=64, device=torch.device('cpu:0'), ddi_in_memory=True, remove_dm=False):
         super(GAMENet, self).__init__()
         K = len(vocab_size)
         self.K = K
@@ -49,6 +49,8 @@ class GAMENet(nn.Module):
         self.device = device
         self.tensor_ddi_adj = torch.FloatTensor(ddi_adj).to(device)
         self.ddi_in_memory = ddi_in_memory
+        self.remove_dm = remove_dm
+        assert self.remove_dm in ["zero_input", "remove_input"], "Wrong type of DM Ablation Method"
         self.embeddings = nn.ModuleList(
             [nn.Embedding(vocab_size[i], emb_dim) for i in range(K-1)])
         self.dropout = nn.Dropout(p=0.4)
@@ -64,12 +66,20 @@ class GAMENet(nn.Module):
         self.ddi_gcn = GCN(voc_size=vocab_size[2], emb_dim=emb_dim, adj=ddi_adj, device=device)
         self.inter = nn.Parameter(torch.FloatTensor(1))
 
-        self.output = nn.Sequential(
-            nn.ReLU(),
-            nn.Linear(emb_dim * 3, emb_dim * 2),
-            nn.ReLU(),
-            nn.Linear(emb_dim * 2, vocab_size[2])
-        )
+        if self.remove_dm == "remove_input":
+            self.output = nn.Sequential(
+                nn.ReLU(),
+                nn.Linear(emb_dim * 2, emb_dim * 2),
+                nn.ReLU(),
+                nn.Linear(emb_dim * 2, vocab_size[2])
+            )
+        else:
+            self.output = nn.Sequential(
+                nn.ReLU(),
+                nn.Linear(emb_dim * 3, emb_dim * 2),
+                nn.ReLU(),
+                nn.Linear(emb_dim * 2, vocab_size[2])
+            )
 
         self.init_weights()
 
@@ -108,6 +118,7 @@ class GAMENet(nn.Module):
         else:
             drug_memory = self.ehr_gcn()
 
+        # Dynamic Memory
         if len(input) > 1:
             history_keys = queries[:(queries.size(0)-1)] # (seq-1, dim)
 
@@ -122,6 +133,7 @@ class GAMENet(nn.Module):
         key_weights1 = F.softmax(torch.mm(query, drug_memory.t()), dim=-1)  # (1, size)
         fact1 = torch.mm(key_weights1, drug_memory)  # (1, dim)
 
+        # Dynamic Memory
         if len(input) > 1:
             visit_weight = F.softmax(torch.mm(query, history_keys.t())) # (1, seq-1)
             weighted_values = visit_weight.mm(history_values) # (1, size)
@@ -129,7 +141,13 @@ class GAMENet(nn.Module):
         else:
             fact2 = fact1
         '''R:convert O and predict'''
-        output = self.output(torch.cat([query, fact1, fact2], dim=-1)) # (1, dim)
+        if self.remove_dm == "zero_input":
+            fact2 = torch.zeros_like(fact2)
+        
+        if self.remove_dm == "remove_input":
+            output = self.output(torch.cat([query, fact1], dim=-1)) # (1, dim)
+        else:
+            output = self.output(torch.cat([query, fact1, fact2], dim=-1)) # (1, dim)
 
         if self.training:
             neg_pred_prob = F.sigmoid(output)

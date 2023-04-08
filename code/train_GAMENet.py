@@ -24,6 +24,7 @@ parser.add_argument('--eval', action='store_true', default=False, help="eval mod
 parser.add_argument('--model_name', type=str, default=model_name, help="model name")
 parser.add_argument('--resume_path', type=str, default=resume_name, help='resume path')
 parser.add_argument('--ddi', action='store_true', default=False, help="using ddi")
+parser.add_argument('--remove_dm', type=str, default=None, help='remove DM method')
 
 args = parser.parse_args()
 model_name = args.model_name
@@ -89,6 +90,9 @@ def eval(model, data_eval, voc_size, epoch):
 
 
 def main():
+
+    main_start_time = time.time()
+
     if not os.path.exists(os.path.join("saved", model_name)):
         os.makedirs(os.path.join("saved", model_name))
 
@@ -116,12 +120,13 @@ def main():
     TEST = args.eval
     Neg_Loss = args.ddi
     DDI_IN_MEM = args.ddi
+    REMOVE_DM = args.remove_dm
     TARGET_DDI = 0.05
     T = 0.5
     decay_weight = 0.85
 
     voc_size = (len(diag_voc.idx2word), len(pro_voc.idx2word), len(med_voc.idx2word))
-    model = GAMENet(voc_size, ehr_adj, ddi_adj, emb_dim=64, device=device, ddi_in_memory=DDI_IN_MEM)
+    model = GAMENet(voc_size, ehr_adj, ddi_adj, emb_dim=64, device=device, ddi_in_memory=DDI_IN_MEM, remove_dm=REMOVE_DM)
     if TEST:
         model.load_state_dict(torch.load(open(resume_name, 'rb')))
     model.to(device=device)
@@ -215,6 +220,10 @@ def main():
             os.path.join('saved', model_name, 'final.model'), 'wb'))
 
         print('best_epoch:', best_epoch)
+
+        main_end_time = time.time()
+        main_elapsed_time = main_end_time - main_start_time
+        print('Total Running Time (seconds):', main_elapsed_time)
 
 
 if __name__ == '__main__':
