@@ -50,7 +50,8 @@ class GAMENet(nn.Module):
         self.tensor_ddi_adj = torch.FloatTensor(ddi_adj).to(device)
         self.ddi_in_memory = ddi_in_memory
         self.remove_dm = remove_dm
-        assert self.remove_dm in ["zero_input", "remove_input"], "Wrong type of DM Ablation Method"
+        if self.remove_dm is not None:
+            assert self.remove_dm in ["zero_input", "remove_input"], "Wrong type of DM Ablation Method"
         self.embeddings = nn.ModuleList(
             [nn.Embedding(vocab_size[i], emb_dim) for i in range(K-1)])
         self.dropout = nn.Dropout(p=0.4)
