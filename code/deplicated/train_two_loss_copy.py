@@ -22,7 +22,7 @@ def f1_dnc(y_gt, y_pred):
 
 def roc_auc_dnc(y_gt, y_prob):
     all_micro = []
-    for b in range(len(y_gt):
+    for b in range(len(y_gt)):
         all_micro.append(roc_auc_score(y_gt[b], y_prob[b], average='micro'))
     return np.mean(all_micro)
 
