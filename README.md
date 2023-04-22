@@ -1,16 +1,24 @@
-# GAMENet
-GAMENet : Graph Augmented MEmory Networks for Recommending Medication Combination
+# Reproducibility Project for CS598 DL4H in Spring 2023 - GAMENet: Graph Augmented MEmory Networks for Recommending Medication Combination
 
-For reproduction of medication prediction results in our [paper](https://arxiv.org/abs/1809.01852), see instructions below.
+## About The Project
 
-## Overview
-This repository contains code necessary to run GAMENet model. GAMENet is an end-to-end model mainly based on graph convolutional networks (GCN) and memory augmented nerual networks (MANN). Paitent history information and drug-drug interactions knowledge are utilized to provide safe and personalized recommendation of medication combination. GAMENet is tested on real-world clinical dataset [MIMIC-III](https://mimic.physionet.org/) and outperformed several state-of-the-art deep learning methods in heathcare area in all effectiveness measures and also achieved higher DDI rate reduction from existing EHR data.
+Drug recommendation is an important part of healthcare. It's important to recommend the best drugs to treat an illness while minimizing the adverse reactions one can get from a combination of medications. There are many deep learning methods that attempt to recommend a proper set of medications for a patient, however, while many of them account for temporal information about the patient, none bake in an understanding of drug-to-drug interaction (DDI) into the model.
+[GAMENet](https://arxiv.org/pdf/1809.01852.pdf) remedies this by constructing a memory-based GNN model that accounts for past visits of patients using EHR, as well as a knowledge graph that represents DDI and their adverse side effects. This DDI knowledge graph is implemented as a graph convolutional network and serves as a memory model. 
+This addition of a knowledge graph to model DDI, allows the model to outperform other effective Deep Learning methods in multi-label drug prediction while reducing the rate of adverse DDI interaction.
 
+## Getting Started
+1. Clone the repo
+   ```sh
+   git clone https://github.com/toluiuiuc/GAMENet.git
+   ```
+2. The project files are under **GAMENet** folder
 
-## Requirements
-- Pytorch >=0.4
-- Python >=3.5
-
+### Requirements
+1. Python >= 3.5
+2. Install the required python packages by running the command below
+   ```sh
+   pip install -r requirements.txt
+   ```
 
 ## Running the code
 ### Data preprocessing
@@ -24,30 +32,58 @@ Data information in ./data:
   - voc_final.pkl is the vocabulary list to transform medical word to corresponding idx.
   - ddi_A_final.pkl and ehr_adj_final.pkl are drug-drug adjacency matrix constructed from EHR and DDI dataset.
   - drug-atc.csv, ndc2atc_level4.csv, ndc2rxnorm_mapping.txt are mapping files for drug code transformation.
-  
-  
+
 ### Model Comparation
  Traning codes can be found in ./code/baseline/
- 
+ In this reproducible project, we are going to test:
  - **Nearest** will simply recommend the same combination medications at previous visit for current visit.
- - **Logistic Regression (LR)** is a logistic regression with L2 regularization. Here we represent the input data by sum of one-hot vector. Binary relevance technique is used to handle multi-label output.
- - **Leap** is an instance-based medication combination recommendation method.
  - **RETAIN** can provide sequential prediction of medication combination based on a two-level neural attention model that detects influential past visits and significant clinical variables within those visits.
- - **DMNC** is a recent work of medication combination prediction via memory augmented neural network based on differentiable neural computers. 
  
- 
+
  ### GAMENet
+ Going to "code" directory and run the command below:
+ - Training Example
  ```
- python train_GAMENet.py --model_name GAMENet --ddi# training with DDI knowledge
- python train_GAMENet.py --model_name GAMENet --ddi --resume_path Epoch_{}_JA_{}_DDI_{}.model --eval # testing with DDI knowledge
  python train_GAMENet.py --model_name GAMENet # training without DDI knowledge
- python train_GAMENet.py --model_name GAMENet --resume_path Epoch_{}_JA_{}_DDI_{}.model --eval # testing with DDI knowledge
+ python train_GAMENet.py --model_name GAMENet --remove_dm zero_input # training without DDI knowledge and "Zero Input" method
+ python train_GAMENet.py --model_name GAMENet --remove_dm remove_input # training without DDI knowledge and "Remove Input" method
+ python train_GAMENet.py --model_name GAMENet --ddi # training with DDI knowledge
+ python train_GAMENet.py --model_name GAMENet --ddi --remove_dm zero_input # training with DDI knowledge and "Zero Input" method
+ python train_GAMENet.py --model_name GAMENet --ddi --remove_dm remove_input # training with DDI knowledge and "Remove Input" method
  ```
- 
+ - Evaluation Example
+```
+# General
+# Testing with DDI knowledge
+python train_GAMENet.py --model_name GAMENet --ddi --resume_path saved/GAMENet/Epoch_{}_JA_{}_DDI_{}.model --eval 
+# Testing with DDI knowledge and "Zero Input" method
+python train_GAMENet.py --model_name GAMENet --ddi --remove_dm zero_input --resume_path saved/GAMENet/Epoch_{}_JA_{}_DDI_{}.model --eval 
+
+# Below are the pretrained examples
+# Testing without DDI knowledge
+python train_GAMENet.py --model_name GAMENet --resume_path pretrained/noddi.model --eval
+# Testing without DDI knowledge and "Zero Input" method
+python train_GAMENet.py --model_name GAMENet --resume_path pretrained/noddi_zero_input.model --remove_dm zero_input --eval
+# Testing without DDI knowledge and "Remove Input" method
+python train_GAMENet.py --model_name GAMENet --resume_path pretrained/noddi_remove_input.model --remove_dm remove_input --eval
+# Testing with DDI knowledge
+python train_GAMENet.py --model_name GAMENet --resume_path pretrained/ddi.model --ddi --eval
+# Testing with DDI knowledge and "Zero Input" method
+python train_GAMENet.py --model_name GAMENet --resume_path pretrained/ddi_zero_input.model --ddi --remove_dm zero_input --eval
+# Testing with DDI knowledge and "Remove Input" method
+python train_GAMENet.py --model_name GAMENet --resume_path pretrained/ddi_remove_input.model --ddi --remove_dm remove_input --eval
+```
+
+## Contact
+
+TIK ON LUI - tlui2@illinois.edu
+Umar Nawed - unawed2@illinois.edu
+
+Project Link: [https://github.com/toluiuiuc/GAMENet](https://github.com/toluiuiuc/GAMENet)
+
 ## Cite 
 
-Please cite our paper if you use this code in your own work:
-
+Cite the paper:
 ```
 @article{shang2018gamenet,
   title="{GAMENet: Graph Augmented MEmory Networks for Recommending Medication Combination}",
