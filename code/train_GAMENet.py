@@ -25,6 +25,7 @@ parser.add_argument('--model_name', type=str, default=model_name, help="model na
 parser.add_argument('--resume_path', type=str, default=resume_name, help='resume path')
 parser.add_argument('--ddi', action='store_true', default=False, help="using ddi")
 parser.add_argument('--remove_dm', type=str, default=None, help='remove DM method')
+parser.add_argument('--cpu', action='store_true', default=False, help="CPU mode")
 
 args = parser.parse_args()
 model_name = args.model_name
@@ -101,7 +102,7 @@ def main():
 
     ehr_adj_path = '../data/ehr_adj_final.pkl'
     ddi_adj_path = '../data/ddi_A_final.pkl'
-    device = torch.device('cuda:0')
+    device = torch.device('cpu:0' if args.cpu else 'cuda:0')
 
     ehr_adj = dill.load(open(ehr_adj_path, 'rb'))
     ddi_adj = dill.load(open(ddi_adj_path, 'rb'))
@@ -209,6 +210,8 @@ def main():
             torch.save(model.state_dict(), open( os.path.join('saved', model_name, 'Epoch_%d_JA_%.4f_DDI_%.4f.model' % (epoch, ja, ddi_rate)), 'wb'))
             print('')
             if epoch != 0 and best_ja < ja:
+                torch.save(model.state_dict(), open(os.path.join(
+                    'saved', model_name, 'best_epoch.model'), 'wb'))
                 best_epoch = epoch
                 best_ja = ja
 
