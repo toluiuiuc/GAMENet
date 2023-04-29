@@ -102,7 +102,11 @@ def main():
 
     ehr_adj_path = '../data/ehr_adj_final.pkl'
     ddi_adj_path = '../data/ddi_A_final.pkl'
-    device = torch.device('cpu:0' if args.cpu else 'cuda:0')
+    # Using CPU or GPU
+    if args.cpu:
+        device = torch.device('cpu:0')
+    else:
+        device = torch.device('cuda:0') 
 
     ehr_adj = dill.load(open(ehr_adj_path, 'rb'))
     ddi_adj = dill.load(open(ddi_adj_path, 'rb'))

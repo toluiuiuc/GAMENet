@@ -44,6 +44,7 @@ Data information in ./data:
  Going to "code" directory and run the command below:
  - Training Example
  ```
+ # Add --cpu for using CPU training
  python train_GAMENet.py --model_name GAMENet # training without DDI knowledge
  python train_GAMENet.py --model_name GAMENet --remove_dm zero_input # training without DDI knowledge and "Zero Input" method
  python train_GAMENet.py --model_name GAMENet --remove_dm remove_input # training without DDI knowledge and "Remove Input" method
@@ -61,17 +62,17 @@ python train_GAMENet.py --model_name GAMENet --ddi --remove_dm zero_input --resu
 
 # Below are the pretrained examples
 # Testing without DDI knowledge
-python train_GAMENet.py --model_name GAMENet --resume_path pretrained/noddi.model --eval
+python train_GAMENet.py --model_name GAMENet --resume_path pretrained/noddi.model --eval --cpu
 # Testing without DDI knowledge and "Zero Input" method
-python train_GAMENet.py --model_name GAMENet --resume_path pretrained/noddi_zero_input.model --remove_dm zero_input --eval
+python train_GAMENet.py --model_name GAMENet --resume_path pretrained/noddi_zero_input.model --remove_dm zero_input --eval --cpu
 # Testing without DDI knowledge and "Remove Input" method
-python train_GAMENet.py --model_name GAMENet --resume_path pretrained/noddi_remove_input.model --remove_dm remove_input --eval
+python train_GAMENet.py --model_name GAMENet --resume_path pretrained/noddi_remove_input.model --remove_dm remove_input --eval --cpu
 # Testing with DDI knowledge
-python train_GAMENet.py --model_name GAMENet --resume_path pretrained/ddi.model --ddi --eval
+python train_GAMENet.py --model_name GAMENet --resume_path pretrained/ddi.model --ddi --eval --cpu
 # Testing with DDI knowledge and "Zero Input" method
-python train_GAMENet.py --model_name GAMENet --resume_path pretrained/ddi_zero_input.model --ddi --remove_dm zero_input --eval
+python train_GAMENet.py --model_name GAMENet --resume_path pretrained/ddi_zero_input.model --ddi --remove_dm zero_input --eval --cpu
 # Testing with DDI knowledge and "Remove Input" method
-python train_GAMENet.py --model_name GAMENet --resume_path pretrained/ddi_remove_input.model --ddi --remove_dm remove_input --eval
+python train_GAMENet.py --model_name GAMENet --resume_path pretrained/ddi_remove_input.model --ddi --remove_dm remove_input --eval --cpu
 ```
 
 ## Contact
