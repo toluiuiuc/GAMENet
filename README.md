@@ -100,6 +100,7 @@ Project Link: [https://github.com/toluiuiuc/GAMENet](https://github.com/toluiuiu
 
 ## Cite 
 Link to paper repo: [https://github.com/sjy1203/GAMENet](https://github.com/sjy1203/GAMENet)
+
 Cite the paper:
 ```
 @article{shang2018gamenet,
