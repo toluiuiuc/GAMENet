@@ -60,7 +60,7 @@ python train_GAMENet.py --model_name GAMENet --ddi --resume_path saved/GAMENet/E
 # Testing with DDI knowledge and "Zero Input" method
 python train_GAMENet.py --model_name GAMENet --ddi --remove_dm zero_input --resume_path saved/GAMENet/Epoch_{}_JA_{}_DDI_{}.model --eval 
 
-# Below are the pretrained examples
+# Below are the pretrained examples by our experiments' result
 # Testing without DDI knowledge
 python train_GAMENet.py --model_name GAMENet --resume_path pretrained/noddi.model --eval --cpu
 # Testing without DDI knowledge and "Zero Input" method
@@ -75,6 +75,22 @@ python train_GAMENet.py --model_name GAMENet --resume_path pretrained/ddi_zero_i
 python train_GAMENet.py --model_name GAMENet --resume_path pretrained/ddi_remove_input.model --ddi --remove_dm remove_input --eval --cpu
 ```
 
+## Result
+| Methods | DDI Rate | △ DDI Rate \% | Jaccard | PR-AUC | F1 |
+| --- | --- | --- | --- | --- | --- |
+| Nearest (from paper) | 0.0791 | +1.80% | 0.3911 | 0.3805 | 0.5465 |
+| Nearest (from ours) | 0.0791 | +1.80% | 0.3911 | 0.3805 | 0.5465 |
+| RETAIN (from paper) | 0.0797 | +2.57% | 0.4168 | 0.6620 | 0.5781 |
+| RETAIN (from ours) | 0.0829 | +6.69% | 0.4175 | 0.6644 | 0.5789 |
+| GameNet (w/o DDI from paper) | 0.0853 | +9.78% | 0.4484 | 0.6878 | 0.6059 |
+| GameNet (w/o DDI from ours) | 0.0867 | +11.58% | 0.4499 | 0.6906 | 0.6075 |
+| GameNet (from paper) | 0.0749 | -3.60% | 0.4509 | 0.6904 | 0.6081 |
+| GameNet (from ours) | 0.0791 | +1.80% | 0.4523 | 0.6910 | 0.6093 |
+| GameNet (w/o DDI & DM by Zero Input) | 0.0804 | +3.47% | 0.4483 | 0.6894 | 0.6061 |
+| GameNet (w/o DDI & DM by Remove Input) | 0.0843 | +8.49% | 0.4452 | 0.6855 | 0.6030 |
+| GameNet (w/o DM by Zero Input) | 0.0849 | +9.27% | 0.4495 | 0.6909 | 0.6070 |
+| GameNet (w/o DM by Remove Input) | 0.0851 | +9.52% | 0.4458 | 0.6901 | 0.6035 |
+
 ## Contact
 
 TIK ON LUI - tlui2@illinois.edu
@@ -83,7 +99,7 @@ Umar Nawed - unawed2@illinois.edu
 Project Link: [https://github.com/toluiuiuc/GAMENet](https://github.com/toluiuiuc/GAMENet)
 
 ## Cite 
-
+Link to paper repo: [https://github.com/sjy1203/GAMENet](https://github.com/sjy1203/GAMENet)
 Cite the paper:
 ```
 @article{shang2018gamenet,
