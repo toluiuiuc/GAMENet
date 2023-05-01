@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 from dnc import DNC
-from layers import GraphConvolution
+from layers import GraphConvolution, GraphAttentionLayer
 
 '''
 Our model
@@ -40,8 +40,44 @@ class GCN(nn.Module):
         mx = r_mat_inv.dot(mx)
         return mx
 
+
+class GAT(nn.Module):
+    def __init__(self, voc_size, emb_dim, adj, device=torch.device('cpu:0'), alpha=0.2, K=8):
+        super(GAT, self).__init__()
+
+        self.voc_size = voc_size
+        self.emb_dim = emb_dim
+        self.device = device
+
+        adj = self.normalize(adj + np.eye(adj.shape[0]))
+
+        self.adj = torch.FloatTensor(adj).to(device)
+        self.x = torch.eye(voc_size).to(device)
+
+        self.layer1 = GraphAttentionLayer(voc_size, emb_dim, K, alpha)
+        self.layer2 = GraphAttentionLayer(K * emb_dim, emb_dim, 1, alpha, concat=False)
+        self.dropout = nn.Dropout(p=0.6)
+
+    def forward(self):
+        node_embedding= self.layer1(self.x, self.adj)
+        node_embedding = F.relu(node_embedding)
+        node_embedding = self.dropout(node_embedding)
+        node_embedding = self.layer2(node_embedding, self.adj)
+
+        return node_embedding
+    
+    def normalize(self, mx):
+        """Row-normalize sparse matrix"""
+        rowsum = np.array(mx.sum(1))
+        r_inv = np.power(rowsum, -1).flatten()
+        r_inv[np.isinf(r_inv)] = 0.
+        r_mat_inv = np.diagflat(r_inv)
+        mx = r_mat_inv.dot(mx)
+        return mx
+
+
 class GAMENet(nn.Module):
-    def __init__(self, vocab_size, ehr_adj, ddi_adj, emb_dim=64, device=torch.device('cpu:0'), ddi_in_memory=True, remove_dm=False):
+    def __init__(self, vocab_size, ehr_adj, ddi_adj, emb_dim=64, device=torch.device('cpu:0'), ddi_in_memory=True, remove_dm=None, graph_type='GCN'):
         super(GAMENet, self).__init__()
         K = len(vocab_size)
         self.K = K
@@ -50,8 +86,11 @@ class GAMENet(nn.Module):
         self.tensor_ddi_adj = torch.FloatTensor(ddi_adj).to(device)
         self.ddi_in_memory = ddi_in_memory
         self.remove_dm = remove_dm
+        self.graph_type = graph_type
         if self.remove_dm is not None:
             assert self.remove_dm in ["zero_input", "remove_input"], "Wrong type of DM Ablation Method"
+        if self.graph_type not in ["GCN", "GAT"]:
+            raise ValueError("Wrong graph type")
         self.embeddings = nn.ModuleList(
             [nn.Embedding(vocab_size[i], emb_dim) for i in range(K-1)])
         self.dropout = nn.Dropout(p=0.4)
@@ -63,8 +102,15 @@ class GAMENet(nn.Module):
             nn.Linear(emb_dim * 4, emb_dim),
         )
 
-        self.ehr_gcn = GCN(voc_size=vocab_size[2], emb_dim=emb_dim, adj=ehr_adj, device=device)
-        self.ddi_gcn = GCN(voc_size=vocab_size[2], emb_dim=emb_dim, adj=ddi_adj, device=device)
+        if self.graph_type == "GCN":
+            self.ehr_graph = GCN(voc_size=vocab_size[2], emb_dim=emb_dim, adj=ehr_adj, device=device)
+            self.ddi_graph = GCN(voc_size=vocab_size[2], emb_dim=emb_dim, adj=ddi_adj, device=device)
+        elif self.graph_type == "GAT":
+            self.ehr_graph = GAT(voc_size=vocab_size[2], emb_dim=emb_dim, adj=ehr_adj, device=device)
+            self.ddi_graph = GAT(voc_size=vocab_size[2], emb_dim=emb_dim, adj=ddi_adj, device=device)
+        else:
+            raise NotImplementedError
+
         self.inter = nn.Parameter(torch.FloatTensor(1))
 
         if self.remove_dm == "remove_input":
@@ -115,9 +161,11 @@ class GAMENet(nn.Module):
 
         '''G:generate graph memory bank and insert history information'''
         if self.ddi_in_memory:
-            drug_memory = self.ehr_gcn() - self.ddi_gcn() * self.inter  # (size, dim)
+            # drug_memory = self.ehr_gcn() - self.ddi_gcn() * self.inter  # (size, dim)
+            drug_memory = self.ehr_graph() - self.ddi_graph() * self.inter  # (size, dim)
         else:
-            drug_memory = self.ehr_gcn()
+            # drug_memory = self.ehr_gcn()
+            drug_memory = self.ehr_graph()
 
         # Dynamic Memory
         if len(input) > 1:

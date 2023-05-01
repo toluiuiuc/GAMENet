@@ -26,6 +26,7 @@ parser.add_argument('--resume_path', type=str, default=resume_name, help='resume
 parser.add_argument('--ddi', action='store_true', default=False, help="using ddi")
 parser.add_argument('--remove_dm', type=str, default=None, help='remove DM method')
 parser.add_argument('--cpu', action='store_true', default=False, help="CPU mode")
+parser.add_argument('--graph_type', type=str, default='GCN', help="Graph Type")
 
 args = parser.parse_args()
 model_name = args.model_name
@@ -126,12 +127,13 @@ def main():
     Neg_Loss = args.ddi
     DDI_IN_MEM = args.ddi
     REMOVE_DM = args.remove_dm
+    GRAPH_TYPE = args.graph_type
     TARGET_DDI = 0.05
     T = 0.5
     decay_weight = 0.85
 
     voc_size = (len(diag_voc.idx2word), len(pro_voc.idx2word), len(med_voc.idx2word))
-    model = GAMENet(voc_size, ehr_adj, ddi_adj, emb_dim=64, device=device, ddi_in_memory=DDI_IN_MEM, remove_dm=REMOVE_DM)
+    model = GAMENet(voc_size, ehr_adj, ddi_adj, emb_dim=64, device=device, ddi_in_memory=DDI_IN_MEM, remove_dm=REMOVE_DM, graph_type=GRAPH_TYPE)
     if TEST:
         model.load_state_dict(torch.load(open(resume_name, 'rb')))
     model.to(device=device)
