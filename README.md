@@ -6,6 +6,10 @@ Drug recommendation is an important part of healthcare. It's important to recomm
 [GAMENet](https://arxiv.org/pdf/1809.01852.pdf) remedies this by constructing a memory-based GNN model that accounts for past visits of patients using EHR, as well as a knowledge graph that represents DDI and their adverse side effects. This DDI knowledge graph is implemented as a graph convolutional network and serves as a memory model. 
 This addition of a knowledge graph to model DDI, allows the model to outperform other effective Deep Learning methods in multi-label drug prediction while reducing the rate of adverse DDI interaction.
 
+The main claims that will be tested are the improved drug recommendation prediction effectiveness and lower DDI rates gained through using GAMENet compared to other models. Specifically, we will compare GAMENet to a baseline Nearest model, and Deep Learning RETAIN model. We aim to reproduce the study results that compared to these two models. GAMENet has a lower DDI Rate, and a greater Jaccard, PR-AUC, and F1-score for multi-label drug prediction. We test this claim because it compares GAMENet to conventional methods, as well as other Deep Learning methods that take temporal information into account. This helps show the effectiveness and safety of the GAMENet architecture. 
+To verify the improvements gained by the DDI module in GameNET, we will remove the DDI module from the architecture and observe that it outperforms the baseline and RETAIN models in the effectiveness of predictions but not in DDI reduction. Furthermore, the model also stores patient history in a dynamic memory, which allows for better prediction even without the DDI embeddings. We want to measure how well the model does when we remove this dynamic memory which contains patient history information over time. This isn’t tested in the original paper but would give a good understanding of how valuable dynamic patient history is to reduce adverse DDI and increase patient drug recommendation effectiveness.
+Lastly, we want to verify the effectiveness of the GCNs used in the original paper compared to other graph models. The paper uses a knowledge graph for DDI interactions and EHR data. We will replace both graphs with a Graph Attention Network, and determine if there’s any degradation in the model’s performance on the test data. The GAT will aim to be as close as possible in terms of its parameters.
+
 ## Getting Started
 1. Clone the repo
    ```sh
@@ -45,12 +49,16 @@ Data information in ./data:
  - Training Example
  ```
  # Add --cpu for using CPU training
- python train_GAMENet.py --model_name GAMENet # training without DDI knowledge
- python train_GAMENet.py --model_name GAMENet --remove_dm zero_input # training without DDI knowledge and "Zero Input" method
- python train_GAMENet.py --model_name GAMENet --remove_dm remove_input # training without DDI knowledge and "Remove Input" method
- python train_GAMENet.py --model_name GAMENet --ddi # training with DDI knowledge
- python train_GAMENet.py --model_name GAMENet --ddi --remove_dm zero_input # training with DDI knowledge and "Zero Input" method
- python train_GAMENet.py --model_name GAMENet --ddi --remove_dm remove_input # training with DDI knowledge and "Remove Input" method
+ # To replicate our experimental outcomes for experiments involving GCN, we suggest using torch 0.4.1 based on our findings
+ python train_GAMENet.py --cpu --graph_type GCN --model_name GAMENet # training without DDI knowledge
+ python train_GAMENet.py --cpu --graph_type GCN --model_name GAMENet --remove_dm zero_input # training without DDI knowledge and "Zero Input" method
+ python train_GAMENet.py --cpu --graph_type GCN --model_name GAMENet --remove_dm remove_input # training without DDI knowledge and "Remove Input" method
+ python train_GAMENet.py --cpu --graph_type GCN --model_name GAMENet --ddi # training with DDI knowledge
+ python train_GAMENet.py --cpu --graph_type GCN --model_name GAMENet --ddi --remove_dm zero_input # training with DDI knowledge and "Zero Input" method
+ python train_GAMENet.py --cpu --graph_type GCN --model_name GAMENet --ddi --remove_dm remove_input # training with DDI knowledge and "Remove Input" method
+ # For experiments involving GAT, it is recommended to use a more recent version of torch and to conduct training on a GPU
+ python train_GAMENet.py --graph_type GAT --model_name GAMENet # training without DDI knowledge and GAT
+ python train_GAMENet.py --graph_type GAT --model_name GAMENet --ddi # training with DDI knowledge and GAT
  ```
  - Evaluation Example
 ```
@@ -61,18 +69,23 @@ python train_GAMENet.py --model_name GAMENet --ddi --resume_path saved/GAMENet/E
 python train_GAMENet.py --model_name GAMENet --ddi --remove_dm zero_input --resume_path saved/GAMENet/Epoch_{}_JA_{}_DDI_{}.model --eval 
 
 # Below are the pretrained examples by our experiments' result
+# It is suggested to use the more recent version (e.g. torch 1.13.1) to assess the results presented below
 # Testing without DDI knowledge
-python train_GAMENet.py --model_name GAMENet --resume_path pretrained/noddi.model --eval --cpu
+python train_GAMENet.py --model_name GAMENet --graph_type GCN --resume_path pretrained/gcn/noddi.model --eval
 # Testing without DDI knowledge and "Zero Input" method
-python train_GAMENet.py --model_name GAMENet --resume_path pretrained/noddi_zero_input.model --remove_dm zero_input --eval --cpu
+python train_GAMENet.py --model_name GAMENet --graph_type GCN --resume_path pretrained/gcn/noddi_zero_input.model --remove_dm zero_input --eval
 # Testing without DDI knowledge and "Remove Input" method
-python train_GAMENet.py --model_name GAMENet --resume_path pretrained/noddi_remove_input.model --remove_dm remove_input --eval --cpu
+python train_GAMENet.py --model_name GAMENet --graph_type GCN --resume_path pretrained/gcn/noddi_remove_input.model --remove_dm remove_input --eval
 # Testing with DDI knowledge
-python train_GAMENet.py --model_name GAMENet --resume_path pretrained/ddi.model --ddi --eval --cpu
+python train_GAMENet.py --model_name GAMENet --graph_type GCN --resume_path pretrained/gcn/ddi.model --ddi --eval
 # Testing with DDI knowledge and "Zero Input" method
-python train_GAMENet.py --model_name GAMENet --resume_path pretrained/ddi_zero_input.model --ddi --remove_dm zero_input --eval --cpu
+python train_GAMENet.py --model_name GAMENet --graph_type GCN --resume_path pretrained/gcn/ddi_zero_input.model --ddi --remove_dm zero_input --eval
 # Testing with DDI knowledge and "Remove Input" method
-python train_GAMENet.py --model_name GAMENet --resume_path pretrained/ddi_remove_input.model --ddi --remove_dm remove_input --eval --cpu
+python train_GAMENet.py --model_name GAMENet --graph_type GCN --resume_path pretrained/gcn/ddi_remove_input.model --ddi --remove_dm remove_input --eval
+# Testing without DDI knowledge and GAT
+python train_GAMENet.py --model_name GAMENet --graph_type GAT --resume_path pretrained/gat/noddi.model --eval
+# Testing with DDI knowledge and GAT
+python train_GAMENet.py --model_name GAMENet --graph_type GAT --resume_path pretrained/gat/ddi.model --ddi --eval
 ```
 
 ## Result
@@ -90,6 +103,8 @@ python train_GAMENet.py --model_name GAMENet --resume_path pretrained/ddi_remove
 | GameNet (w/o DDI & DM by Remove Input) | 0.0843 | +8.49% | 0.4452 | 0.6855 | 0.6030 |
 | GameNet (w/o DM by Zero Input) | 0.0849 | +9.27% | 0.4495 | 0.6909 | 0.6070 |
 | GameNet (w/o DM by Remove Input) | 0.0851 | +9.52% | 0.4458 | 0.6901 | 0.6035 |
+| GameNet (w/o DDI, GAT) | 0.0856 | +10.17% | 0.4504 | 0.6883 | 0.6081 |
+| GameNet (GAT) | 0.0794 | +2.19% | 0.4560 | 0.6953 | 0.6133 |
 
 ## Contact
 
