@@ -49,14 +49,14 @@ Data information in ./data:
  - Training Example
  ```
  # Add --cpu for using CPU training
- # To replicate our experimental outcomes for experiments involving GCN, we suggest using torch 0.4.1 based on our findings
+ # To replicate our experimental outcomes for experiments involving GCN, we suggest using **torch 0.4.1** based on our findings
  python train_GAMENet.py --cpu --graph_type GCN --model_name GAMENet # training without DDI knowledge
  python train_GAMENet.py --cpu --graph_type GCN --model_name GAMENet --remove_dm zero_input # training without DDI knowledge and "Zero Input" method
  python train_GAMENet.py --cpu --graph_type GCN --model_name GAMENet --remove_dm remove_input # training without DDI knowledge and "Remove Input" method
  python train_GAMENet.py --cpu --graph_type GCN --model_name GAMENet --ddi # training with DDI knowledge
  python train_GAMENet.py --cpu --graph_type GCN --model_name GAMENet --ddi --remove_dm zero_input # training with DDI knowledge and "Zero Input" method
  python train_GAMENet.py --cpu --graph_type GCN --model_name GAMENet --ddi --remove_dm remove_input # training with DDI knowledge and "Remove Input" method
- # For experiments involving GAT, it is recommended to use a more recent version of torch and to conduct training on a GPU
+ # For experiments involving GAT, it is recommended to use a more **recent version** (e.g. torch 1.13.1) of torch and to conduct training on a GPU
  python train_GAMENet.py --graph_type GAT --model_name GAMENet # training without DDI knowledge and GAT
  python train_GAMENet.py --graph_type GAT --model_name GAMENet --ddi # training with DDI knowledge and GAT
  ```
@@ -69,7 +69,7 @@ python train_GAMENet.py --model_name GAMENet --ddi --resume_path saved/GAMENet/E
 python train_GAMENet.py --model_name GAMENet --ddi --remove_dm zero_input --resume_path saved/GAMENet/Epoch_{}_JA_{}_DDI_{}.model --eval 
 
 # Below are the pretrained examples by our experiments' result
-# It is suggested to use the more recent version (e.g. torch 1.13.1) to assess the results presented below
+# It is suggested to use the more **recent version** (e.g. torch 1.13.1) to assess the results presented below
 # Testing without DDI knowledge
 python train_GAMENet.py --model_name GAMENet --graph_type GCN --resume_path pretrained/gcn/noddi.model --eval
 # Testing without DDI knowledge and "Zero Input" method
