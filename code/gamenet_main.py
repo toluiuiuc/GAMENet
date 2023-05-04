@@ -125,7 +125,7 @@ def main(cpu=True, isTest=False, withDDI=False, graph_type='GCN', remove_dm=None
     optimizer = Adam(list(model.parameters()), lr=LR)
 
     if TEST:
-        eval(model, data_test, voc_size, 0, model_name)
+        return eval(model, data_test, voc_size, 0, model_name)
     else:
         history = defaultdict(list)
         best_epoch = 0
