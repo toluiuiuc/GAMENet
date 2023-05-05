@@ -29,6 +29,7 @@ Lastly, we want to verify the effectiveness of the GCNs used in the original pap
 In ./data, you can find the well-preprocessed data in pickle form. Also, it's easy to re-generate the data as follows:
 1.  download [MIMIC data](https://mimic.physionet.org/gettingstarted/dbsetup/) and put DIAGNOSES_ICD.csv, PRESCRIPTIONS.csv, PROCEDURES_ICD.csv in ./data/
 2.  download [DDI data](https://www.dropbox.com/s/8os4pd2zmp2jemd/drug-DDI.csv?dl=0) and put it in ./data/
+
 (To save your time, all required files for EDA.ipynb have been uploaded in [here](https://uofi.box.com/s/zby2koz29s4ubnz2w1pb622ddryauo5d))
 3.  run code **./data/EDA.ipynb**
 
