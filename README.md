@@ -107,6 +107,10 @@ python train_GAMENet.py --model_name GAMENet --graph_type GAT --resume_path pret
 | GameNet (w/o DDI, GAT) | 0.0856 | +10.17% | 0.4504 | 0.6883 | 0.6081 |
 | GameNet (GAT) | 0.0794 | +2.19% | 0.4560 | 0.6953 | 0.6133 |
 
+## Notebook Analysis
+[Here](https://github.com/toluiuiuc/GAMENet/blob/master/code/Analysis.ipynb)'s the notebook containing the analysis to visualize the findings of our experiment.
+
+
 ## Contact
 
 TIK ON LUI - tlui2@illinois.edu
